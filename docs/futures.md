@@ -26,6 +26,10 @@
 | [Collect](#collect) | Transform the successful result of a filter |
 | [Transform](#transform) | Most powerful method on a Future - use if all else fails |
 
+### Code examples:
+* [Most examples are in a Scala worksheet](https://github.com/Pete1232/scala-notes/blob/master/src/main/scala/futures.sc)
+* [Test examples are here](https://github.com/Pete1232/scala-notes/blob/master/src/test/scala/FuturesSpec.scala)
+
 ## Asynchronous programming
 A simple _synchronous_ application will run all commands one after the other on the main app _thread_.
 
