@@ -1,3 +1,4 @@
+#### [Back to home page](index.md)
 # Working with Futures
 ### Contents:
 * [Intro](#asynchronous-programming)
@@ -37,4 +38,4 @@
 ## Execution contexts and thread pools
 
 ## References
-* [Programming in Scala](https://booksites.artima.com/programming_in_scala_3ed)(3rd edition)
+* [Programming in Scala](https://booksites.artima.com/programming_in_scala_3ed) (3rd edition)
