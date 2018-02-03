@@ -415,6 +415,15 @@ scala> caller
 res9: String = Done
 ```
 
+One important thing to remember about callbacks is there is **no
+guarentee on the ordering of callbacks on a single Future** (this is why
+the interface was designed to return `Unit` so they couldn't be easily chained
+).
+
+If you _need_ to order multiple callbacks make sure to carefully create
+a _new Future_ that runs after the first, though in general I'd say just
+avoid this situation and write the code another way.
+
 ## Error handling
 If a fatal error occurs while a Future is running it won't just throw an exception (mainly because if it was on another thread we'd never see it).
 Instead it will return a `Failure`, which can then be handled to get back to a `Success` state.
