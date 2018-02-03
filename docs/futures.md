@@ -21,6 +21,9 @@
 | [Fold](#fold) | Collapse a collection of Futures to a Future of a single value |
 | [Traverse](#traverse) | A generalised version of Sequence |
 | [Recover/RecoverWith](#error-handling) | Recover from fatal exceptions |
+| [Filter](#filter) | Only succeed if the result matches a predicate |
+| [Collect](#collect) | Transform the successful result of a filter |
+| [Transform](#transform) | Most powerful method on a Future - use if all else fails |
 
 ## Asynchronous programming
 A simple _synchronous_ application will run all commands one after the other on the main app _thread_.
@@ -305,8 +308,86 @@ Future.sequence(seqOfFutures) === Future.traverse(seqOfFutures)(identity)
 ```
 ## Other methods on Futures
 ### Filter
+This will check the result of a Future, either returning a successful
+result as-is if it matches the filter, or throwning a
+`NoSuchElementException` otherwise.
+
+```scala
+scala> val anotherFuture = Future(22 + 10)
+anotherFuture: scala.concurrent.Future[Int] = Future(Success(32))
+ 
+scala> val result9 = anotherFuture.filter(_ >= 0)
+result9: scala.concurrent.Future[Int] = Future(<not completed>)
+ 
+scala> result9.value
+res0: Option[scala.util.Try[Int]] = Some(Success(32))
+ 
+scala> val result10 = anotherFuture.filter(_ < 0)
+result10: scala.concurrent.Future[Int] = Future(<not completed>)
+ 
+scala> result10.value
+res1: Option[scala.util.Try[Int]] = Some(Failure(java.util.NoSuchElementException: Future.filter predicate is not satisfied))
+```
+
+Since Futures have a `withFilter` method defined this will also work in
+for-comprehensions:
+```scala
+scala> val result11 = for {
+     |   res <- anotherFuture if res > 0
+     | } yield {
+     |   res
+     | }
+result11: scala.concurrent.Future[Int] = Future(<not completed>)
+ 
+scala> result11.value
+res2: Option[scala.util.Try[Int]] = Some(Success(32))
+```
+Though in practice I haven't really found a use for `filter` in either
+form since there are so many other ways to handle this.
+
 ### Collect
+Collect applies a partial function to the result of the Future, either
+returning the result if defined or again returning a
+`NoSuchElementException` otherwise.
+
+This is basically a filter with a map on the positive case
+```scala
+scala> val result12 = anotherFuture.collect {
+     |   case x if x > 0 => 2 * x
+     | }
+result12: scala.concurrent.Future[Int] = Future(<not completed>)
+ 
+scala> result12.value
+res3: Option[scala.util.Try[Int]] = Some(Success(64))
+ 
+scala> val result13 = anotherFuture.collect {
+     |   case x if x < 0 => 2 * x
+     | }
+result13: scala.concurrent.Future[Int] = Future(Failure(java.util.NoSuchElementException: Future.collect partial function is not defined at: 32))
+ 
+scala> result13.value
+res4: Option[scala.util.Try[Int]] = Some(Failure(java.util.NoSuchElementException: Future.collect partial function is not defined at: 32))
+```
+
 ### Transform
+Transform is the generalised version of pretty much every other method
+on Futures. You can use it to transform results, filter, change Success
+to Failure or vice-versa... Here's a slightly more complex example to
+show this off:
+```scala
+scala> val result14 = anotherFuture.transform {
+     |   case Success(x) if x < 0 => Failure(new Throwable(s"$x must not be negative"))
+     |   case Success(x) => Success(x * 2)
+     |   case e: Failure[Int] => Success(s"Caught an error ${e.exception.getMessage}")
+     | }
+result14: scala.concurrent.Future[Any] = Future(<not completed>)
+ 
+scala> result14.value
+res6: Option[scala.util.Try[Any]] = Some(Success(64))
+```
+As a rule don't use this - there is probably a less powerful method that
+does what you want. But if writing something with simpler functions is
+complicated or messy `transform` might be the way to go.
 
 ## Error handling
 If a fatal error occurs while a Future is running it won't just throw an exception (mainly because if it was on another thread we'd never see it).

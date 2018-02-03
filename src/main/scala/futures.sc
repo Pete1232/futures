@@ -1,6 +1,7 @@
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 // Example 1
 val fut1 = Future {
@@ -154,3 +155,48 @@ val result8 = failedFuture.recover {
 }
 
 result8.value
+
+
+// Example 14
+val anotherFuture = Future(22 + 10)
+
+val result9 = anotherFuture.filter(_ >= 0)
+
+result9.value
+
+val result10 = anotherFuture.filter(_ < 0)
+
+result10.value
+
+
+// Example 15
+val result11 = for {
+  res <- anotherFuture if res > 0
+} yield {
+  res
+}
+
+result11.value
+
+
+// Example 16
+val result12 = anotherFuture.collect {
+  case x if x > 0 => 2 * x
+}
+
+result12.value
+
+val result13 = anotherFuture.collect {
+  case x if x < 0 => 2 * x
+}
+
+result13.value
+
+// Example17
+val result14 = anotherFuture.transform {
+  case Success(x) if x < 0 => Failure(new Throwable(s"$x must not be negative"))
+  case Success(x) => Success(x * 2)
+  case e: Failure[Int] => Success(s"Caught an error ${e.exception.getMessage}")
+}
+
+result14.value
