@@ -461,6 +461,21 @@ If you use this be careful to only have one assertion per test. In a
 the last test will run**_!
 
 ## Execution contexts and thread pools
+When working with Futures you generally don't have to think about the
+threads your code is running on. This is because it is managed by an
+_ExecutionContext_.
+
+The ExecutionContext (EC) tells any Future using it which threads to run
+on. In general the default Scala EC is fine
+```scala
+import scala.concurrent.ExecutionContext.Implicits.global
+```
+
+When using the Play! framework you should instead use the default Play!
+EC (and it should be injected using the DI framework).
+
+The only common reason to use a custom EC would be for a very long
+computation, as the Scala default is not designed for this.
 
 ## Other notes
 * If you're seeing processes running in a strange order or you have
@@ -472,3 +487,4 @@ the last test will run**_!
 
 ## References
 * [Programming in Scala](https://booksites.artima.com/programming_in_scala_3ed) (3rd edition)
+* [Scala online documentation](https://docs.scala-lang.org/overviews/core/futures.html)
