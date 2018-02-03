@@ -2,12 +2,24 @@
 # Working with Futures
 ### Contents:
 * [Intro](#asynchronous-programming)
-* [Using Futures](#using-futures)
+* [Basics of using Futures](#using-futures)
+* [Managing lots of Futures](#combining-collections-of-futures)
 * [Transforming the result](#other-methods-on-futures)
 * [Error handling](#error-handling)
 * [Testing with Futures](#testing-with-futures)
 * [Execution contexts](#execution-contexts-and-thread-pools)
 * [References](#references)
+
+### Function cheat sheet:
+
+| Name | Description |
+| --- | --- |
+| [Map](#map) | Transform the result of a Future |
+| [FlatMap](#flatMap) | Transform the result of a Future to another Future |
+| [For Comprehensions](#for-comprehensions) | An easy way to use Map and FlatMap |
+| [Sequence](#sequence) | Transform a collection of Futures to a Future of a collection |
+| [Fold](#fold) | Collapse a collection of Futures to a Future of a single value |
+| [Traverse](#traverse) | A generalised version of Sequence |
 
 ## Asynchronous programming
 A simple _synchronous_ application will run all commands one after the other on the main app _thread_.
@@ -30,7 +42,7 @@ Traditionally writing asynchronous code has been tedious and difficult - which i
 In Scala a `Future` is an abstraction that makes it easy to write async code.
 
 Any block of code can be made to run asynchronously by wrapping it in a Future. For example:
-``` 
+```
 scala> import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.ExecutionContext.Implicits.global
  
@@ -64,6 +76,13 @@ res9: Option[scala.util.Try[Nothing]] = Some(Failure(java.lang.Throwable: Test))
 ```
 This has the same result as just using Future but is slightly more efficient since it doesn't have to manage the asynchronous calculation.
 (Note the second case didn't throw a fatal exception. See [Error handling](#error-handling))
+
+### Awaiting
+In general you should *never* have an `Await.result` (or `Await.ready`) in your production code (it actually says so in the documentation).
+
+Doing this will block the main thread to wait for the result of the Future, defeating the point of using it in the first place.
+
+Even if you have a good reason to there is usually a better way. Most simple cases should hopefully be covered in here somewhere.
 
 ### Map
 In most cases we will want to do something with the result of the future. Using a `map` makes it possible to do this without
@@ -203,8 +222,86 @@ res25: Option[scala.util.Try[Int]] = Some(Success(86))
 ```
 would _always_ wait for `fut11` to complete before computing `doubleAsync(res1)` wherever it was defined.
 
-### Combining collections of Futures
+## Combining collections of Futures
+Quite often you can end up dealing with a lot of Futures running at the same time. To keep track of them all Scala has
+a few functions to operate on entire collections of Futures
 
+### Sequence
+By far the most common (in my experience anyway) is `Future.sequence`. This lets you transform a collection of Futures
+into a Future of a collection, which is usually much easier to work with.
+```
+scala> val seqOfFutures: Seq[Future[Int]] = Seq(
+     |   Future(11 + 2),
+     |   Future(22 + 3),
+     |   Future(33 + 4),
+     |   Future(44 + 5)
+     | )
+seqOfFutures: Seq[scala.concurrent.Future[Int]] = List(Future(Success(13)), Future(Success(25)), Future(Success(37)), Future(Success(49)))
+ 
+scala> val result4 = Future.sequence(seqOfFutures)
+result4: scala.concurrent.Future[Seq[Int]] = Future(<not completed>)
+ 
+scala> result4.value
+res26: Option[scala.util.Try[Seq[Int]]] = Some(Success(List(13, 25, 37, 49)))
+```
+This will evaluate every Future in the collection at the same time on different threads (or at least as many as it can)
+and return a Future containing the result of them all in a collection. If _any_ of them fail the whole Future will fail.
+
+### Fold
+The `Future.fold` method will collapse or "fold" a collection of Futures down to a single Future
+```
+scala> val result5 = Future.fold(seqOfFutures)(10) { (x, y) =>
+     |   x + y
+     | }
+result5: scala.concurrent.Future[Int] = Future(<not completed>)
+ 
+scala> result5.value
+res27: Option[scala.util.Try[Int]] = Some(Success(134))
+```
+This will run all Futures serially, using the result of one to feed into the next.
+
+Note that this is deprecated for `foldLeft` in Scala-2.12. It works basically the same but _requires_ an immutable collection
+```
+scala> val seqOfFutures2: immutable.Iterable[Future[Int]] = scala.collection.immutable.Iterable(
+     |   Future(11 + 2),
+     |   Future(22 + 3),
+     |   Future(33 + 4),
+     |   Future(44 + 5)
+     | )
+seqOfFutures2: scala.collection.immutable.Iterable[scala.concurrent.Future[Int]] = List(Future(Success(13)), Future(Success(25)), Future(Success(37)), Future(Success(49)))
+ 
+scala> val result6 = Future.foldLeft(seqOfFutures2)(10){ (x, y) =>
+     |   x + y
+     | }
+result6: scala.concurrent.Future[Int] = Future(<not completed>)
+ 
+scala> result6.value
+res30: Option[scala.util.Try[Int]] = Some(Success(134))
+```
+
+### Traverse
+This one is less likely to be useful, but is basically a generalised `Future.sequence`. The difference is you start with a
+collection of whatever you like and give a function to turn each into a Future. Then it sequences the result:
+```
+scala> val seqOfInt = Seq(
+     |   11 + 2,
+     |   22 + 3,
+     |   33 + 4,
+     |   44 + 5
+     | )
+seqOfInt: Seq[Int] = List(13, 25, 37, 49)
+ 
+scala> val result7 = Future.traverse(seqOfInt)(x => Future.apply(x))
+result7: scala.concurrent.Future[Seq[Int]] = Future(<not completed>)
+ 
+scala> result7.value
+res31: Option[scala.util.Try[Seq[Int]]] = Some(Success(List(13, 25, 37, 49)))
+```
+
+Note that `result4` (the sequence) is the same as `result7` (the traverse). That's because:
+```
+Future.sequence(seqOfFutures) === Future.traverse(seqOfFutures)(identity)
+```
 ## Other methods on Futures
 ### Filter
 ### Collect

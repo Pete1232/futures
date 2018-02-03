@@ -1,3 +1,4 @@
+import scala.collection.immutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -93,4 +94,54 @@ val result3 = for {
 }
 
 result3.value
+
+// Example 9
+val seqOfFutures: Seq[Future[Int]] = Seq(
+  Future(11 + 2),
+  Future(22 + 3),
+  Future(33 + 4),
+  Future(44 + 5)
+)
+
+val result4 = Future.sequence(seqOfFutures)
+
+result4.value
+
+
+//noinspection ScalaDeprecation
+// Example 10
+val result5 = Future.fold(seqOfFutures)(10){ (x, y) =>
+  x + y
+}
+
+result5.value
+
+
+//Example 11
+val seqOfFutures2: immutable.Iterable[Future[Int]] = scala.collection.immutable.Iterable(
+  Future(11 + 2),
+  Future(22 + 3),
+  Future(33 + 4),
+  Future(44 + 5)
+)
+
+val result6 = Future.foldLeft(seqOfFutures2)(10){ (x, y) =>
+  x + y
+}
+
+result6.value
+
+
+// Example 12
+val seqOfInt = Seq(
+  11 + 2,
+  22 + 3,
+  33 + 4,
+  44 + 5
+)
+
+val result7 = Future.traverse(seqOfInt)(x => Future.apply(x))
+
+result7.value
+
 
