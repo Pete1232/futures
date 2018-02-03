@@ -9,6 +9,7 @@
 * [Testing with Futures](#testing-with-futures)
 * [Execution contexts](#execution-contexts-and-thread-pools)
 * [References](#references)
+* [Other notes and common pitfalls](#other-notes)
 
 ### Function cheat sheet:
 
@@ -410,9 +411,39 @@ res1: Option[scala.util.Try[Any]] = Some(Success(Cannot divide by 0))
 
 ## Testing with futures
 ### Awaiting the result
+The standard and easiest way to test async code is to `Await` the result.
+After awaiting the completion of a future this is just like a normal test.
+```scala
+val testFuture: Future[Int] = Future.successful(32)
+
+Await.result(testFuture, 10 seconds) mustBe 32
+```
 ### Async testing with ScalaTest
+As of version 3 ScalaTest now supports testing Future code. You can
+enable it by importing the Async version of your favourite test spec.
+E.g `AsyncWordSpec`. Using that you can test Futures using `map`:
+```scala
+val testFuture: Future[Int] = Future.successful(32)
+
+testFuture.map(_ mustBe 32)
+```
+The Async test suites also work for synchronous tests. As far as I know
+theres no performance benefit to this, just neater test code.
+
+If you use this be careful to only have one assertion per test. In a
+"normal" test you can get away with multiple
+`mustBe`/`shouldBe`/`assert` blocks, but with the Async test suites _**only
+the last test will run**_!
 
 ## Execution contexts and thread pools
+
+## Other notes
+* If you're seeing processes running in a strange order or you have
+  tests for async code that seem to fail randomly its a symptom of badly
+  written Futures. Watch out for embedded Futures (i.e.
+  `Future[Future[T]]]`) where a `map` has been used instead of a
+  `flatMap`. This is easy to do it one of them returns a `Unit` because
+  it will type check.
 
 ## References
 * [Programming in Scala](https://booksites.artima.com/programming_in_scala_3ed) (3rd edition)
