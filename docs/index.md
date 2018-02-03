@@ -1,3 +1,2 @@
-# Scala notes
-
-## [Working with Futures](futures.md)
+## Pages:
+### [Working with Futures](futures.md)

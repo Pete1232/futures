@@ -1,7 +1,5 @@
 # Working with Futures
-[back to index](index.md)
-
-###Contents:
+### Contents:
 * [Intro](#asynchronous-programming)
 * [Using Futures](#using-futures)
 * [Combining Futures](#combining-futures)
@@ -9,6 +7,7 @@
 * [Error handling](#error-handling)
 * [Testing with Futures](#testing-with-futures)
 * [Execution contexts](#execution-contexts-and-thread-pools)
+* [References](#references)
 
 ## Asynchronous programming
 
@@ -36,3 +35,6 @@
 ### Async testing with ScalaTest
 
 ## Execution contexts and thread pools
+
+## References
+* [Programming in Scala](https://booksites.artima.com/programming_in_scala_3ed)(3rd edition)
