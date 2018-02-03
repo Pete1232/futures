@@ -1,13 +1,13 @@
 # Working with Futures
 **[Back to home page](index.md)**
 ## Contents
-* [Intro](#asynchronous-programming-introduction)
+* [Brief overview of asynchronous programming](#asynchronous-programming-introduction)
 * [Basics of using Futures](#using-futures)
-* [Managing lots of Futures](#combining-collections-of-futures)
-* [Transforming the result](#other-methods-on-futures)
+* [Managing collections of Futures](#combining-collections-of-futures)
+* [More advanced usage](#other-methods-on-futures)
 * [Error handling](#error-handling)
-* [Testing with Futures](#testing-with-futures)
-* [Execution contexts](#execution-contexts-and-thread-pools)
+* [Testing asynchronous code](#testing-with-futures)
+* [Execution contexts in a bit more detail](#execution-contexts-and-thread-pools)
 * [Other notes and common pitfalls](#other-notes)
 * [References](#references)
 
@@ -417,8 +417,8 @@ res9: String = Done
 
 One important thing to remember about callbacks is there is **no
 guarentee on the ordering of callbacks on a single Future** (this is why
-the interface was designed to return `Unit` so they couldn't be easily chained
-).
+the interface was designed to return `Unit` so they couldn't be easily
+chained).
 
 If you _need_ to order multiple callbacks make sure to carefully create
 a _new Future_ that runs after the first, though in general I'd say just
