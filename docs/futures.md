@@ -20,6 +20,7 @@
 | [Sequence](#sequence) | Transform a collection of Futures to a Future of a collection |
 | [Fold](#fold) | Collapse a collection of Futures to a Future of a single value |
 | [Traverse](#traverse) | A generalised version of Sequence |
+| [Recover/RecoverWith](#error-handling) | Recover from fatal exceptions |
 
 ## Asynchronous programming
 A simple _synchronous_ application will run all commands one after the other on the main app _thread_.
@@ -308,6 +309,23 @@ Future.sequence(seqOfFutures) === Future.traverse(seqOfFutures)(identity)
 ### Transform
 
 ## Error handling
+If a fatal error occurs while a Future is running it won't just throw an exception (mainly because if it was on another thread we'd never see it).
+Instead it will return a `Failure`, which can then be handled to get back to a `Success` state.
+
+You can do this with the `recover` method, or `recoverWith` if you want to recover with another Future:
+```scala
+scala> val failedFuture = Future { 11 / 0 }
+failedFuture: scala.concurrent.Future[Int] = Future(<not completed>)
+ 
+scala> val result8 = failedFuture.recover {
+     |   case _: ArithmeticException => "Cannot divide by 0"
+     |   case _ => "Help!"
+     | }
+result8: scala.concurrent.Future[Any] = Future(<not completed>)
+ 
+scala> result8.value
+res1: Option[scala.util.Try[Any]] = Some(Success(Cannot divide by 0))
+```
 
 ## Testing with futures
 ### Awaiting the result

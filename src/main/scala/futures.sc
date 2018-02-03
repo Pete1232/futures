@@ -145,3 +145,12 @@ val result7 = Future.traverse(seqOfInt)(x => Future.apply(x))
 result7.value
 
 
+// Example 13
+val failedFuture = Future { 11 / 0 }
+
+val result8 = failedFuture.recover {
+  case _: ArithmeticException => "Cannot divide by 0"
+  case _ => "Help!"
+}
+
+result8.value
