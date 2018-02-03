@@ -1,23 +1,23 @@
-#### [Back to home page](index.md)
 # Working with Futures
-### Contents:
-* [Intro](#asynchronous-programming)
+**[Back to home page](index.md)**
+## Contents
+* [Intro](#asynchronous-programming-introduction)
 * [Basics of using Futures](#using-futures)
 * [Managing lots of Futures](#combining-collections-of-futures)
 * [Transforming the result](#other-methods-on-futures)
 * [Error handling](#error-handling)
 * [Testing with Futures](#testing-with-futures)
 * [Execution contexts](#execution-contexts-and-thread-pools)
-* [References](#references)
 * [Other notes and common pitfalls](#other-notes)
+* [References](#references)
 
-### Function cheat sheet:
+## Function cheat sheet
 
 | Name | Description |
 | --- | --- |
 | [Map](#map) | Transform the result of a Future |
 | [FlatMap](#flatMap) | Transform the result of a Future to another Future |
-| [For Comprehensions](#for-comprehensions) | An easy way to use Map and FlatMap |
+| [For Comprehensions](#for-comprehensions) | An easy way to use Map, FlatMap and Filter |
 | [Sequence](#sequence) | Transform a collection of Futures to a Future of a collection |
 | [Fold](#fold) | Collapse a collection of Futures to a Future of a single value |
 | [Traverse](#traverse) | A generalised version of Sequence |
@@ -27,11 +27,11 @@
 | [Transform](#transform) | Most powerful method on a Future - use if all else fails |
 | [OnComplete/OnSuccess/OnFailure](#callbacks) | For callbacks from Futures |
 
-### Code examples:
+## Code examples
 * [Most examples are in a Scala worksheet](https://github.com/Pete1232/scala-notes/blob/master/src/main/scala/futures.sc)
 * [Test examples are here](https://github.com/Pete1232/scala-notes/blob/master/src/test/scala/FuturesSpec.scala)
 
-## Asynchronous programming
+## Asynchronous programming introduction
 A simple _synchronous_ application will run all commands one after the other on the main app _thread_.
 
 This is okay in simple cases but: 
