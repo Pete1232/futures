@@ -25,6 +25,7 @@
 | [Filter](#filter) | Only succeed if the result matches a predicate |
 | [Collect](#collect) | Transform the successful result of a filter |
 | [Transform](#transform) | Most powerful method on a Future - use if all else fails |
+| [OnComplete/OnSuccess/OnFailure](#callbacks) | For callbacks from Futures |
 
 ### Code examples:
 * [Most examples are in a Scala worksheet](https://github.com/Pete1232/scala-notes/blob/master/src/main/scala/futures.sc)
