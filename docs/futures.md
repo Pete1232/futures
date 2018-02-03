@@ -394,6 +394,26 @@ As a rule don't use this - there is probably a less powerful method that
 does what you want. But if writing something with simpler functions is
 complicated or messy `transform` might be the way to go.
 
+### Callbacks
+You can also register callbacks from Futures using `onComplete`,
+  `onSuccess` and `onFailure`. These can be useful in some use cases but
+  should generally be avoided in functional code.
+```scala
+scala> var caller: String = null
+caller: String = null
+ 
+scala> val called = Future { 11 + 12 }
+called: scala.concurrent.Future[Int] = Future(<not completed>)
+ 
+scala> called.onComplete(_ => caller = "Done")
+ 
+scala> called.value
+res8: Option[scala.util.Try[Int]] = Some(Success(23))
+ 
+scala> caller
+res9: String = Done
+```
+
 ## Error handling
 If a fatal error occurs while a Future is running it won't just throw an exception (mainly because if it was on another thread we'd never see it).
 Instead it will return a `Failure`, which can then be handled to get back to a `Success` state.

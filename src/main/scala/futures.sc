@@ -192,6 +192,7 @@ val result13 = anotherFuture.collect {
 
 result13.value
 
+
 // Example17
 val result14 = anotherFuture.transform {
   case Success(x) if x < 0 => Failure(new Throwable(s"$x must not be negative"))
@@ -200,3 +201,14 @@ val result14 = anotherFuture.transform {
 }
 
 result14.value
+
+
+// Example 18
+var caller: String = null
+
+val called = Future { 11 + 12 }
+called.onComplete(_ => caller = "Done")
+
+called.value
+
+caller
