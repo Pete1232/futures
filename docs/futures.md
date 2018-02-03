@@ -179,7 +179,7 @@ res24: Option[scala.util.Try[Int]] = Some(Success(2279))
 ```
 Internally this will "flatten" the Futures using `map` and `flatMap` as appropriate, but can be much cleaner and easier to read.
 
-####Important note:
+#### Important note:
 In this example the 3 Futures were defined _before_ the for-comprehension.
 
 This means a thread will start computing the result(s) as soon as each value is assigned and all 3 will run in parallel.
