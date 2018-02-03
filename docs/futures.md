@@ -42,7 +42,7 @@ Traditionally writing asynchronous code has been tedious and difficult - which i
 In Scala a `Future` is an abstraction that makes it easy to write async code.
 
 Any block of code can be made to run asynchronously by wrapping it in a Future. For example:
-```
+```scala
 scala> import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.ExecutionContext.Implicits.global
  
@@ -67,7 +67,7 @@ Usually you don't need to worry too much about this but see [Execution contexts]
 
 There may be some situations you want to construct a Future that has already been completed (mainly in testing). This can
 be done with the `Future.successful` and `Future.failed` methods:
-```
+```scala
 scala> Future.successful(21+1).value
 res8: Option[scala.util.Try[Int]] = Some(Success(22))
  
@@ -89,7 +89,7 @@ In most cases we will want to do something with the result of the future. Using 
 having to block and wait for the result of the Future
 
 Map has the following signature:
-```
+```scala
  def map[S](f: T => S)(implicit executor: ExecutionContext): Future[S]
 ```
 * `T` is the type of the Future. In all examples here `T` = `Int`
@@ -97,7 +97,7 @@ Map has the following signature:
 
 So for a map all we need is to provide a function `f: T => S`. Here's a simple example:
 
-```
+```scala
 scala> def double(x: Int): Int = x*2
 double: (x: Int)Int
  
@@ -122,12 +122,12 @@ Mapping will actually return a _new_ Future containing the result of mapping on 
 What if we want to run one bit of asynchronous code after another. To chain two methods returning Futures you can use a `flatMap`.
 
 FlatMap has the following signature:
-```
+```scala
  def flatMap[S](f: T => Future[S])(implicit executor: ExecutionContext): Future[S]
 ```
 Which is almost exactly the same as `map` except the function `f` returns a `Future[S]` instead of just `S`.
 Here's another example:
-```
+```scala
 scala> def doubleAsync(x: Int): Future[Int] = Future{x*2}
 doubleAsync: (x: Int)scala.concurrent.Future[Int]
  
@@ -142,7 +142,7 @@ res6: Option[scala.util.Try[Int]] = Some(Success(44))
 ```
 
 Map and FlatMap can be combined to create more complex methods:
-```
+```scala
 scala> val fut1 = Future{21 + 1}
 fut1: scala.concurrent.Future[Int] = Future(<not completed>)
  
@@ -159,7 +159,7 @@ res7: Option[scala.util.Try[Int]] = Some(Success(55))
 ### For-Comprehensions
 Map and FlatMap are great, but they can get messy to use in complex flows. For example:
 
-```
+```scala
 scala> val fut9 = Future(21)
 fut9: scala.concurrent.Future[Int] = Future(<not completed>)
  
@@ -183,7 +183,7 @@ res23: Option[scala.util.Try[Int]] = Some(Success(2279))
 ```
 
 This can be cleaned up using a _for-comprehension_:
-```
+```scala
 scala> val result2 = for {
      |   res1 <- fut9
      |   res2 <- fut10
@@ -208,7 +208,7 @@ The same applies to using `map` and `flatMap`.
 
 If one Future depends on the result of another they will be run in series automatically so you don't need to worry.
 For example:
-```
+```scala
 scala> val result3 = for {
      |   res1 <- fut11
      |   res2 <- doubleAsync(res1)
@@ -229,7 +229,7 @@ a few functions to operate on entire collections of Futures
 ### Sequence
 By far the most common (in my experience anyway) is `Future.sequence`. This lets you transform a collection of Futures
 into a Future of a collection, which is usually much easier to work with.
-```
+```scala
 scala> val seqOfFutures: Seq[Future[Int]] = Seq(
      |   Future(11 + 2),
      |   Future(22 + 3),
@@ -249,7 +249,7 @@ and return a Future containing the result of them all in a collection. If _any_ 
 
 ### Fold
 The `Future.fold` method will collapse or "fold" a collection of Futures down to a single Future
-```
+```scala
 scala> val result5 = Future.fold(seqOfFutures)(10) { (x, y) =>
      |   x + y
      | }
@@ -261,7 +261,7 @@ res27: Option[scala.util.Try[Int]] = Some(Success(134))
 This will run all Futures serially, using the result of one to feed into the next.
 
 Note that this is deprecated for `foldLeft` in Scala-2.12. It works basically the same but _requires_ an immutable collection
-```
+```scala
 scala> val seqOfFutures2: immutable.Iterable[Future[Int]] = scala.collection.immutable.Iterable(
      |   Future(11 + 2),
      |   Future(22 + 3),
@@ -282,7 +282,7 @@ res30: Option[scala.util.Try[Int]] = Some(Success(134))
 ### Traverse
 This one is less likely to be useful, but is basically a generalised `Future.sequence`. The difference is you start with a
 collection of whatever you like and give a function to turn each into a Future. Then it sequences the result:
-```
+```scala
 scala> val seqOfInt = Seq(
      |   11 + 2,
      |   22 + 3,
@@ -299,7 +299,7 @@ res31: Option[scala.util.Try[Seq[Int]]] = Some(Success(List(13, 25, 37, 49)))
 ```
 
 Note that `result4` (the sequence) is the same as `result7` (the traverse). That's because:
-```
+```scala
 Future.sequence(seqOfFutures) === Future.traverse(seqOfFutures)(identity)
 ```
 ## Other methods on Futures
