@@ -469,6 +469,12 @@ If you use this be careful to only have one assertion per test. In a
 `mustBe`/`shouldBe`/`assert` blocks, but with the Async test suites _**only
 the last test will run**_!
 
+Something else to be aware of is that ScalaTests Async suites use a
+custom serial execution context. This shouldn't really matter, but I've
+had issues in some tests where Futures don't complete because of this.
+It's easily fixed by explicitly passing the usual execution context to
+the class being tested.
+
 ## Execution contexts and thread pools
 When working with Futures you generally don't have to think about the
 threads your code is running on. This is because it is managed by an
